@@ -1,0 +1,17 @@
+version: 0.2
+env:
+  variables:
+    CLUSTER_NAME: brain-tasks-cluster
+phases:
+  install:
+    commands:
+      - curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+  pre_build:
+    commands:
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+  build:
+    commands:
+      - IMAGE_URI=$(cat imagedefinitions.json | jq -r '.[0].imageUri')
+      - kubectl set image deployment/brain-tasks-deployment brain-tasks=$IMAGE_URI
